@@ -73,46 +73,54 @@ class Elevator:
             return "No MORE REQUESTS"
 
         elif self.__status == Status.UP:
+            # there is up or undirected requests in range (current floor, top floor)
+            if True in self.__up_queue[self.__current_floor - 1:] or \
+                    True in self.__undirected_queue[self.__current_floor - 1:]:
+                # self.open_door() will handle it
+                return "NO direction/floor adjustments"
+
             # no more up or undirected requests in range (current floor, top floor)
-            if True not in self.__up_queue[self.__current_floor-1:] and \
-                    True not in self.__undirected_queue[self.__current_floor-1:]:
+            # find down request in range (top floor, bottom floor)
+            for i in range(self.floors - 1, -1, -1):
+                if self.__down_queue[i] or self.__undirected_queue[i]:
+                    # change status
+                    self.__status = Status.DOWN
+                    # move elevator over
+                    self.__current_floor = i + 1
+                    return "elevator moves to", self.__current_floor
 
-                # find down request in range (top floor, bottom floor)
-                for i in range(self.floors - 1, -1, -1):
-                    if self.__down_queue[i] or self.__undirected_queue[i]:
-                        # change status
-                        self.__status = Status.DOWN
-                        # move elevator over
-                        self.__current_floor = i + 1
-                        return "elevator moves to", self.__current_floor
-
-                # find up request in range(bottom floor, top floor)
-                for i in range(self.floors):
-                    if self.__up_queue[i]:
-                        # no need to change status
-                        # move elevator over
-                        self.__current_floor = i + 1
-                        return "elevator moves to", self.__current_floor
+            # find up request in range(bottom floor, top floor)
+            for i in range(self.floors):
+                if self.__up_queue[i]:
+                    # no need to change status
+                    # move elevator over
+                    self.__current_floor = i + 1
+                    return "elevator moves to", self.__current_floor
 
         elif self.__status == Status.DOWN:
+            # there is down or undirected requests in range (bottom floor, current floor)
+            if True in self.__down_queue[:self.__current_floor] or \
+                    True in self.__undirected_queue[:self.__current_floor]:
+                # self.open_door() will handle it
+                return "NO direction/floor adjustments"
+
             # no more down or undirected requests in range (bottom floor, current floor)
-            if True not in self.__down_queue[:self.__current_floor] and \
-                    True not in self.__undirected_queue[:self.__current_floor]:
+            # find up request in range (bottom floor, top floor)
+            for i in range(self.floors):
+                if self.__up_queue[i] or self.__undirected_queue[i]:
+                    # change status
+                    self.__status = Status.UP
+                    # move elevator over
+                    self.__current_floor = i + 1
+                    return "elevator moves to", self.__current_floor
 
-                # find up request in range (bottom floor, top floor)
-                for i in range(self.floors):
-                    if self.__up_queue[i] or self.__undirected_queue[i]:
-                        self.__status = Status.UP
-                        self.__current_floor = i + 1
-                        return "elevator moves to", self.__current_floor
-
-                # find down request in range(top floor, bottom floor)
-                for i in range(self.floors - 1, -1, -1):
-                    if self.__up_queue[i]:
-                        self.__current_floor = i + 1
-                        return "elevator moves to", self.__current_floor
-
-        return "NO direction/floor adjustments"
+            # find down request in range(top floor, bottom floor)
+            for i in range(self.floors - 1, -1, -1):
+                if self.__up_queue[i]:
+                    # no need to change status
+                    # move elevator over
+                    self.__current_floor = i + 1
+                    return "elevator moves to", self.__current_floor
 
 
 class Request(ABC):
