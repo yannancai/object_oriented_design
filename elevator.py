@@ -33,8 +33,6 @@ class Elevator:
     # go to the next in request queue
     # cancel the request from the queue
     def open_door(self):
-        if self.__status == Status.IDLE:
-            return "NO MORE REQUESTS"
 
         if self.__status == Status.UP:
             for i in range(self.__current_floor - 1, self.floors):
@@ -45,8 +43,6 @@ class Elevator:
                     # cancel the request from the queue
                     self.__up_queue[i] = False
                     self.__undirected_queue[i] = False
-
-                    return "door opens on", self.__current_floor
 
         elif self.__status == Status.DOWN:
             for i in range(self.__current_floor - 1, -1, -1):
@@ -61,7 +57,7 @@ class Elevator:
                     # print(self.__up_queue, self.__down_queue, self.__undirected_queue)
                     # print(self.__status)
                     
-                    return "door opens on", self.__current_floor
+        return "door opens on", self.__current_floor
 
     # change the status and move elevator when needed
     def close_door(self):
