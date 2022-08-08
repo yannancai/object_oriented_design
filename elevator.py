@@ -30,18 +30,22 @@ class Elevator:
         print(self.__up_queue, self.__down_queue, self.__undirected_queue)
         print(self.__status)
 
+    # go to the next in request queue
+    # cancel the request from the queue
     def open_door(self):
-        # go to the next in request queue
-        # cancel from the queue
         if self.__status == Status.IDLE:
             return "NO MORE REQUESTS"
 
         if self.__status == Status.UP:
             for i in range(self.__current_floor - 1, self.floors):
                 if self.__up_queue[i] or self.__undirected_queue[i]:
+                    # move the elevator to the next in request queue
                     self.__current_floor = i + 1
+
+                    # cancel the request from the queue
                     self.__up_queue[i] = False
                     self.__undirected_queue[i] = False
+
                     print(self.__up_queue, self.__down_queue, self.__undirected_queue)
                     print(self.__status)
                     return "door opens on", self.__current_floor
@@ -49,40 +53,60 @@ class Elevator:
         elif self.__status == Status.DOWN:
             for i in range(self.__current_floor - 1, -1, -1):
                 if self.__down_queue[i] or self.__undirected_queue[i]:
+                    # move the elevator to the next in request queue
                     self.__current_floor = i + 1
+
+                    # cancel the request from the queue
                     self.__down_queue[i] = False
                     self.__undirected_queue[i] = False
+
                     print(self.__up_queue, self.__down_queue, self.__undirected_queue)
                     print(self.__status)
                     return "door opens on", self.__current_floor
 
+    # change the status
     def close_door(self):
-        # change the status
-        if True not in self.__up_queue and True not in self.__down_queue and True not in self.__undirected_queue:
+
+        if True not in self.__up_queue and True not in self.__down_queue and \
+                True not in self.__undirected_queue:
             self.__status = Status.IDLE
             return "No MORE REQUESTS"
 
-        if self.__status == Status.UP:
+        elif self.__status == Status.UP:
+            # no more up or undirected requests in range (current floor, top floor)
             if True not in self.__up_queue[self.__current_floor-1:] and \
                     True not in self.__undirected_queue[self.__current_floor-1:]:
+
+                # find down request in range (top floor, bottom floor)
                 for i in range(self.floors - 1, -1, -1):
                     if self.__down_queue[i] or self.__undirected_queue[i]:
+                        # change status
                         self.__status = Status.DOWN
-                        self.__current_floor = i + 1
-                        return "elevator moves to", self.__current_floor
-                for i in range(self.floors):
-                    if self.__up_queue[i]:
+                        # move elevator over
                         self.__current_floor = i + 1
                         return "elevator moves to", self.__current_floor
 
-        if self.__status == Status.DOWN:
+                # find up request in range(bottom floor, top floor)
+                for i in range(self.floors):
+                    if self.__up_queue[i]:
+                        # no need to change status
+                        # move elevator over
+                        self.__current_floor = i + 1
+                        return "elevator moves to", self.__current_floor
+
+        elif self.__status == Status.DOWN:
+            # no more down or undirected requests in range (bottom floor, current floor)
             if True not in self.__down_queue[:self.__current_floor] and \
                     True not in self.__undirected_queue[:self.__current_floor]:
+
+                # find up request in range (bottom floor, top floor)
                 for i in range(self.floors):
                     if self.__up_queue[i] or self.__undirected_queue[i]:
                         self.__status = Status.UP
                         self.__current_floor = i + 1
                         return "elevator moves to", self.__current_floor
+
+                # find down request in range(top floor, bottom floor)
                 for i in range(self.floors - 1, -1, -1):
                     if self.__up_queue[i]:
                         self.__current_floor = i + 1
