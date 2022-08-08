@@ -54,8 +54,8 @@ class Elevator:
                     self.__down_queue[i] = False
                     self.__undirected_queue[i] = False
 
-                    # print(self.__up_queue, self.__down_queue, self.__undirected_queue)
-                    # print(self.__status)
+        # print(self.__up_queue, self.__down_queue, self.__undirected_queue)
+        # print(self.__status)
                     
         return "door opens on", self.__current_floor
 
