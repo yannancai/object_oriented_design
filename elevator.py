@@ -70,6 +70,10 @@ class Elevator:
                         self.__status = Status.DOWN
                         self.__current_floor = i + 1
                         return "elevator moves to", self.__current_floor
+                for i in range(self.floors):
+                    if self.__up_queue[i]:
+                        self.__current_floor = i + 1
+                        return "elevator moves to", self.__current_floor
 
         if self.__status == Status.DOWN:
             if True not in self.__down_queue[:self.__current_floor] and \
@@ -77,6 +81,10 @@ class Elevator:
                 for i in range(self.floors):
                     if self.__up_queue[i] or self.__undirected_queue[i]:
                         self.__status = Status.UP
+                        self.__current_floor = i + 1
+                        return "elevator moves to", self.__current_floor
+                for i in range(self.floors - 1, -1, -1):
+                    if self.__up_queue[i]:
                         self.__current_floor = i + 1
                         return "elevator moves to", self.__current_floor
 
