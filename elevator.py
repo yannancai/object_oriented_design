@@ -21,7 +21,7 @@ class Elevator:
         self.__status = Status.IDLE
         self.__current_floor = 1
 
-    def handle_request(self, request):
+    def take_request(self, request):
         request.add_request_to_queue(self.__up_queue, self.__down_queue, self.__undirected_queue)
 
         if self.__status == Status.IDLE:
@@ -30,8 +30,8 @@ class Elevator:
         print(self.__up_queue, self.__down_queue, self.__undirected_queue)
         print(self.__status)
 
-    # go to the next in request queue
-    # cancel the request from the queue
+    # process next request
+    # go to the next in request queue and cancel the request from the queue
     def open_door(self):
 
         if self.__status == Status.UP:
@@ -42,6 +42,7 @@ class Elevator:
             open_result = self.__handle_next_down_undirected_req()
             return open_result
 
+    # locate next request
     # change the status and move elevator when needed
     def close_door(self):
 
@@ -219,8 +220,8 @@ my_elevator = Elevator(5)
 request_1 = OutRequest(2, 'DOWN')
 request_2 = InRequest(4)
 
-my_elevator.handle_request(request_1)
-my_elevator.handle_request(request_2)
+my_elevator.take_request(request_1)
+my_elevator.take_request(request_2)
 
 msg_open_1 = my_elevator.open_door()
 print(msg_open_1)
