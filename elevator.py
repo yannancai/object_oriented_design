@@ -129,7 +129,7 @@ class InRequest(Request):
 
 my_elevator = Elevator(5)
 
-request_1 = OutRequest(2, 'DOWN')
+request_1 = OutRequest(2, Direction.DOWN)
 request_2 = InRequest(4)
 
 my_elevator.add_request(request_1)
@@ -138,7 +138,7 @@ my_elevator.add_request(request_2)
 msg_1 = my_elevator.find_and_complete_next_request()
 print(msg_1)
 
-request_3 = OutRequest(3, 'UP')
+request_3 = OutRequest(3, Direction.UP)
 my_elevator.add_request(request_3)
 
 msg_2 = my_elevator.find_and_complete_next_request()
@@ -152,3 +152,4 @@ print(msg_3)
 
 msg_4 = my_elevator.find_and_complete_next_request()
 print(msg_4)
+
