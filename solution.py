@@ -1,136 +1,92 @@
-from abc import ABC, abstractmethod
-from collections import deque
+# design a data structure find the highest frequent item:
+# Coding: OOD + data structure: 设计一个API，有两个函数，第一个每call一次收集一个购买物品的ID以及时间，第二个query最经常被购买的k个物品的list
+# follow-up：第二个函数变成单位时间内被购买的最多的产品，数据结构和query该怎么改动
+# follow-up：如果有很多个线程同时在call这俩function，数据结构和query该怎么改动
 
 
-class File:
-    def __init__(self, name, is_directory: bool, extension, size: int):
-        self.name = name
-        self.is_directory = is_directory
-        self.extension = extension
-        self.size = size
-        self.children = []
-
-    def set_children(self, file):
-        self.children.append(file)
+import heapq
 
 
-class LinuxSearch:
-    def search(self, criteria, file):
-        if not file.is_directory:
-            raise Exception("File is not directory")
+class Find_Highest_Frequent:
+	def __init__(self):
+		self.__call_history = {}	# item_id : [timestamp]
+	
+	def call_collector(self, item_id, timestamp):
+		if item_id not in self.__call_history:
+			self.__call_history[item_id] = [timestamp]
+		else:
+			self.__call_history[item_id].append(timestamp)
+	
+	# original solution
+	# def find_top(self, k):
+	# 	if k < len(self.__call_history):
+	# 		k = len(self.__call_history)
+		
+	# 	min_heap = []
+	# 	for item_id in self.__call_history:
+	# 		time_stamps = self.__call_history[item_id]
+	# 		heapq.heappush(min_heap, (len(time_stamps), item_id))
+	# 		if len(min_heap) > k:
+	# 			heapq.heappop(min_heap)
+		
+	# 	# time complexity O(nlogk)
+				
+	# 	return sorted([a[1] for a in min_heap], reverse = True)
 
-        search_result = []
-        queue = deque()
+	# follow up solution
+	def find_top(self, k, start, end):
+		if k < len(self.__call_history):
+			k = len(self.__call_history)
+		
+		min_heap = []
+		for item_id in self.__call_history:
+			time_stamps = self.__call_history[item_id]
+			
+			valid_time_count = self.__time_count(time_stamps, start, end)
 
-        for child in file.children:
-            queue.append(child)
+			heapq.heappush(min_heap, (valid_time_count, item_id))
+			if len(min_heap) > k:
+				heapq.heappop(min_heap)
+		
+		# binary search time complexity O(nlogm), where m is the average # of timestamps for each item
+		# heap time complexity O(nlogk), where n is # of items, k is the parameter
+		# overall time complexity is O(nlogm + nlogn)		
+		
+		return sorted([a[1] for a in min_heap], reverse = True)
 
-        while queue:
-            cur_file = queue.popleft()
-            if criteria.is_valid(cur_file):
-                search_result.append(cur_file)
-            if cur_file.children:
-                for child in cur_file.children:
-                    queue.append(child)
+	def __time_count(self, time_stamps, start, end):
+		if not start and not end:
+			return len(time_stamps)
+		
+		# do 2 binary searches to locate start and end respectively
+		if start:
+			start_index = self.__binary_search(time_stamps, start, "right")
+		if end:
+			end_index = self.__binary_search(time_stamps, end, "left")
 
-        return search_result
+		if not start_index or not end_index:
+			return 0
+		return end_index - start_index + 1
 
+	def __binary_search(self, time_stamps, target, edge):
+		left, right = 0, len(time_stamps) - 1
+		while left + 1 < right:
+			mid = (left + right) // 2
+			if time_stamps[mid] < target:
+				left = mid
+			else:
+				right = mid
+		
+		if edge == 'right':
+			if time_stamps[right] < target:
+				return None
+			if time_stamps[left] >= target:
+				return left
+			return right
 
-class Criteria(ABC):
-    @abstractmethod
-    def is_valid(self, file):
-        pass
-
-
-class ByExtension(Criteria):
-    def __init__(self, extension):
-        self.extension = extension
-
-    def is_valid(self, file):
-        if file.extension is self.extension:
-            return True
-
-
-class ByNodeSize(Criteria, ABC):
-    @abstractmethod
-    def __init__(self, size):
-        self.size = size
-
-    @abstractmethod
-    def is_valid(self, file):
-        pass
-
-
-class ByGreatOrEqual(ByNodeSize):
-    def __init__(self, size):
-        super().__init__(size)
-
-    def is_valid(self, file):
-        if file.size >= self.size:
-            return True
-
-
-class AndCriteria(Criteria):
-    def __init__(self, criteria_a, criteria_b):
-        self.criteria_a = criteria_a
-        self.criteria_b = criteria_b
-
-    def is_valid(self, file):
-        return self.criteria_a.is_valid(file) and self.criteria_b.is_valid(file)
-
-
-class OrCriteria(Criteria):
-    def __init__(self, criteria_a, criteria_b):
-        self.criteria_a = criteria_a
-        self.criteria_b = criteria_b
-
-    def is_valid(self, file):
-        return self.criteria_a.is_valid(file) or self.criteria_b.is_valid(file)
-
-
-home = File("home", True, None, 100)
-movie = File("movie", True, None, 70)
-music = File("music", True, None, 20)
-resume = File("resume", False, "txt", 10)
-alpha = File("alpha", False, "txt", 15)
-beta = File("beta", False, "mp4", 60)
-gamma = File("gamma", False, "mp4", 15)
-cuban = File("cuban", True, None, 5)
-
-home.set_children(movie)
-home.set_children(music)
-home.set_children(resume)
-movie.set_children(alpha)
-movie.set_children(beta)
-music.set_children(gamma)
-music.set_children(cuban)
-
-my_linux = LinuxSearch()
-
-is_txt = ByExtension("txt")
-search_home_txt = my_linux.search(is_txt, home)
-print("search_home_txt")
-print([(file.name, file.size) for file in search_home_txt])
-
-is_size_ge_15 = ByGreatOrEqual(15)
-search_movie_ge_15 = my_linux.search(is_size_ge_15, movie)
-print("search_movie_ge_15")
-print([(file.name, file.size) for file in search_movie_ge_15])
-
-is_txt_ge_15 = AndCriteria(is_txt, is_size_ge_15)
-search_home_txt_ge_15 = my_linux.search(is_txt_ge_15, home)
-print("search_home_txt_ge_15")
-print([(file.name, file.size) for file in search_home_txt_ge_15])
-
-is_mp4 = ByExtension("mp4")
-search_home_mp4 = my_linux.search(is_mp4, home)
-print("search_home_mp4")
-print([(file.name, file.size) for file in search_home_mp4])
-
-# txt ge 15 or mp4
-is_home_comp = OrCriteria(is_txt_ge_15, is_mp4)
-search_home_comp = my_linux.search(is_home_comp, home)
-print("search_home_comp")
-print([(file.name, file.size) for file in search_home_comp])
-
-search_gamma = my_linux.search(is_txt, gamma)
+		if edge == 'left':
+			if time_stamps[left] > target:
+				return None
+			if time_stamps[right] <= target:
+				return right
+			return left
