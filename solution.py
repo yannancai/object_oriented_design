@@ -41,7 +41,8 @@ class Restaurant:
 
     def cancel_reservation(self, reservation):
         i, j = reservation.table_id[0], reservation.table_id[1]
-        self.tables[i][j].reservations.remove(reservation.time)
+        reserved_table = self.tables[i][j]
+        reserved_table.reservations.remove(reservation.time)
 
 
 class Table:
