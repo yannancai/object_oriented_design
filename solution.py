@@ -65,5 +65,6 @@ class Table:
 
     def __find_prev_next(self, req_time):
         # binary search find the prev and following reservation starting time
+        # need to implement
         prev, following = float('inf'), -float('inf')
         return prev, following
