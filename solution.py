@@ -56,7 +56,7 @@ class Table:
             return Reservation(req_time, table_id)
 
         prev, following = self.__find_prev_next(req_time)
-        if req_time > prev + 2 and req_time + 2 < following:
+        if req_time >= prev + 2 and req_time + 2 <= following:
             self.reservations.append(req_time)
             self.reservations.sort()
             return Reservation(req_time, table_id)
