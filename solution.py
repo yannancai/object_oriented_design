@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 
 
-class Node:
+class File:
     def __init__(self, name, is_directory: bool, extension, size: int):
         self.name = name
         self.is_directory = is_directory
@@ -10,27 +10,27 @@ class Node:
         self.size = size
         self.children = []
 
-    def set_children(self, node):
-        self.children.append(node)
+    def set_children(self, file):
+        self.children.append(file)
 
 
 class LinuxSearch:
-    def search(self, criteria, node):
-        if not node.is_directory:
-            raise Exception("Node is not directory")
+    def search(self, criteria, file):
+        if not file.is_directory:
+            raise Exception("File is not directory")
 
         search_result = []
         queue = deque()
 
-        for child in node.children:
+        for child in file.children:
             queue.append(child)
 
         while queue:
-            cur_node = queue.popleft()
-            if criteria.is_valid(cur_node):
-                search_result.append(cur_node)
-            if cur_node.children:
-                for child in cur_node.children:
+            cur_file = queue.popleft()
+            if criteria.is_valid(cur_file):
+                search_result.append(cur_file)
+            if cur_file.children:
+                for child in cur_file.children:
                     queue.append(child)
 
         return search_result
@@ -38,7 +38,7 @@ class LinuxSearch:
 
 class Criteria(ABC):
     @abstractmethod
-    def is_valid(self, node):
+    def is_valid(self, file):
         pass
 
 
@@ -46,8 +46,8 @@ class ByExtension(Criteria):
     def __init__(self, extension):
         self.extension = extension
 
-    def is_valid(self, node):
-        if node.extension is self.extension:
+    def is_valid(self, file):
+        if file.extension is self.extension:
             return True
 
 
@@ -57,7 +57,7 @@ class ByNodeSize(Criteria, ABC):
         self.size = size
 
     @abstractmethod
-    def is_valid(self, node):
+    def is_valid(self, file):
         pass
 
 
@@ -65,8 +65,8 @@ class ByGreatOrEqual(ByNodeSize):
     def __init__(self, size):
         super().__init__(size)
 
-    def is_valid(self, node):
-        if node.size >= self.size:
+    def is_valid(self, file):
+        if file.size >= self.size:
             return True
 
 
@@ -75,8 +75,8 @@ class AndCriteria(Criteria):
         self.criteria_a = criteria_a
         self.criteria_b = criteria_b
 
-    def is_valid(self, node):
-        return self.criteria_a.is_valid(node) and self.criteria_b.is_valid(node)
+    def is_valid(self, file):
+        return self.criteria_a.is_valid(file) and self.criteria_b.is_valid(file)
 
 
 class OrCriteria(Criteria):
@@ -84,18 +84,18 @@ class OrCriteria(Criteria):
         self.criteria_a = criteria_a
         self.criteria_b = criteria_b
 
-    def is_valid(self, node):
-        return self.criteria_a.is_valid(node) or self.criteria_b.is_valid(node)
+    def is_valid(self, file):
+        return self.criteria_a.is_valid(file) or self.criteria_b.is_valid(file)
 
 
-home = Node("home", True, None, 100)
-movie = Node("movie", True, None, 70)
-music = Node("music", True, None, 20)
-resume = Node("resume", False, "txt", 10)
-alpha = Node("alpha", False, "txt", 15)
-beta = Node("beta", False, "mp4", 60)
-gamma = Node("gamma", False, "mp4", 15)
-cuban = Node("cuban", True, None, 5)
+home = File("home", True, None, 100)
+movie = File("movie", True, None, 70)
+music = File("music", True, None, 20)
+resume = File("resume", False, "txt", 10)
+alpha = File("alpha", False, "txt", 15)
+beta = File("beta", False, "mp4", 60)
+gamma = File("gamma", False, "mp4", 15)
+cuban = File("cuban", True, None, 5)
 
 home.set_children(movie)
 home.set_children(music)
@@ -110,27 +110,27 @@ my_linux = LinuxSearch()
 is_txt = ByExtension("txt")
 search_home_txt = my_linux.search(is_txt, home)
 print("search_home_txt")
-print([(node.name, node.size) for node in search_home_txt])
+print([(file.name, file.size) for file in search_home_txt])
 
 is_size_ge_15 = ByGreatOrEqual(15)
 search_movie_ge_15 = my_linux.search(is_size_ge_15, movie)
 print("search_movie_ge_15")
-print([(node.name, node.size) for node in search_movie_ge_15])
+print([(file.name, file.size) for file in search_movie_ge_15])
 
 is_txt_ge_15 = AndCriteria(is_txt, is_size_ge_15)
 search_home_txt_ge_15 = my_linux.search(is_txt_ge_15, home)
 print("search_home_txt_ge_15")
-print([(node.name, node.size) for node in search_home_txt_ge_15])
+print([(file.name, file.size) for file in search_home_txt_ge_15])
 
 is_mp4 = ByExtension("mp4")
 search_home_mp4 = my_linux.search(is_mp4, home)
 print("search_home_mp4")
-print([(node.name, node.size) for node in search_home_mp4])
+print([(file.name, file.size) for file in search_home_mp4])
 
 # txt ge 15 or mp4
 is_home_comp = OrCriteria(is_txt_ge_15, is_mp4)
 search_home_comp = my_linux.search(is_home_comp, home)
 print("search_home_comp")
-print([(node.name, node.size) for node in search_home_comp])
+print([(file.name, file.size) for file in search_home_comp])
 
 search_gamma = my_linux.search(is_txt, gamma)
