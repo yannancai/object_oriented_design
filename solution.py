@@ -1,6 +1,6 @@
 class Reservation:
     def __init__(self, time, table_id):
-        self.time = time
+        self.time = time    # time is an integer YYYYMMDDHH 2022081513 and HH is in 24-hour style; it represent the starting time of the reservation
         self.table_id = table_id    # table_id is a two integer tuple (i, j), which are the indices in restaurant.tables
 
 
@@ -47,7 +47,7 @@ class Restaurant:
 class Table:
     def __init__(self, size):
         self.size = size
-        self.reservations = []  # a list of starting time of reservations
+        self.reservations = []  # a list of starting times of reservations in YYYYMMDDHH style
 
     def add_reservation(self, req_time, table_id):
         if not self.reservations:
@@ -63,6 +63,6 @@ class Table:
         return None
 
     def __find_prev_next(self, req_time):
-        # binary search find the prev and next
+        # binary search find the prev and following reservation starting time
         prev, following = float('inf'), -float('inf')
         return prev, following
