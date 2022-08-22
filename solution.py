@@ -1,21 +1,27 @@
 # design a data structure find the highest frequent item:
 # Coding: OOD + data structure: 设计一个API，有两个函数，第一个每call一次收集一个购买物品的ID以及时间，第二个query最经常被购买的k个物品的list
 # follow-up：第二个函数变成单位时间内被购买的最多的产品，数据结构和query该怎么改动
-# follow-up：如果有很多个线程同时在call这俩function，数据结构和query该怎么改动
+# follow-up：如果有很多个线程同时在call这俩function，数据结构和query该怎么改动 -> use a thread lock
 
 
 import heapq
-
+from threading import Thread, Lock
 
 class Find_Highest_Frequent:
 	def __init__(self):
 		self.__call_history = {}	# item_id : [timestamp]
+		self.lock = Lock()
 	
 	def call_collector(self, item_id, timestamp):
+		
+		self.lock.acquire()
+		
 		if item_id not in self.__call_history:
 			self.__call_history[item_id] = [timestamp]
 		else:
 			self.__call_history[item_id].append(timestamp)
+			
+		self.lock.release()
 	
 	# original solution
 	# def find_top(self, k):
